@@ -42,3 +42,52 @@ php artisan make:mail SendEmailTest
 
 php artisan queue:work
 ```
+
+### Keep Laravel Queue System Running on Server:
+As we know we must need to keep running `php artisan work` command on the terminal because then and then queue will work. so in server, you must have to keep running using Supervisor. A supervisor is a process monitor for the Linux operating system, and will automatically restart your queue:work processes if they fail.
+
+So let's install Supervisor using bellow command:
+
+#### Install Supervisor:
+```bash
+sudo apt-get install supervisor
+```
+
+Next, we need to configuration file on supervisor as below following path, you can set project path, user and output file location as well:
+
+#### /etc/supervisor/conf.d/laravel-worker.conf
+```bash
+[program:laravel-worker]
+
+process_name=%(program_name)s_%(process_num)02d
+
+command=php /home/forge/app.com/artisan queue:work sqs --sleep=3 --tries=3 --max-time=3600
+
+autostart=true
+
+autorestart=true
+
+stopasgroup=true
+
+killasgroup=true
+
+user=forge
+
+numprocs=8
+
+redirect_stderr=true
+
+stdout_logfile=/home/forge/app.com/worker.log
+
+stopwaitsecs=3600
+```
+
+Next, we will start supervisor with below commands:
+```bash
+sudo supervisorctl reread
+
+sudo supervisorctl update
+
+sudo supervisorctl start laravel-worker:*
+```
+Now you can check it, from your end.
